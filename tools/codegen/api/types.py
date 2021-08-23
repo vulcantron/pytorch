@@ -1,6 +1,7 @@
 from tools.codegen.model import (Argument, FunctionSchema, NativeFunction,
                                  BackendIndex,
                                  SelfArgument, TensorOptionsArguments, BaseTy)
+import dataclasses
 from dataclasses import dataclass
 from typing import Optional, Union, Sequence, TypeVar, List, Set, Dict
 from enum import Enum
@@ -262,12 +263,7 @@ class Binding:
         return self.nctype.cpp_type()
 
     def no_default(self) -> 'Binding':
-        return Binding(
-            name=self.name,
-            nctype=self.nctype,
-            default=None,
-            argument=self.argument,
-        )
+        return dataclasses.replace(self, default=None)
 
     def decl(self, *, func_ptr_cast: bool = False) -> str:
         mb_default = ""

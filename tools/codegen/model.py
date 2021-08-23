@@ -1,5 +1,6 @@
 import re
 
+import dataclasses
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Iterator, Tuple, Set, NoReturn, Sequence, Callable, Union
 from enum import Enum, auto
@@ -830,11 +831,9 @@ class FunctionSchema:
         """
 
         def strip_ret_annotation(r: Return) -> Return:
-            return Return(
-                name=None,
-                type=r.type,
-                annotation=None,
-            )
+            # TODO update function name to reference that name is also
+            # stripped.
+            return dataclasses.replace(r, name=None, annotation=None)
 
         return FunctionSchema(
             name=OperatorName(

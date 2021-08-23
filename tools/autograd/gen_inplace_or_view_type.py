@@ -1,3 +1,5 @@
+import dataclasses
+
 from tools.codegen.api import cpp
 from tools.codegen.api.autograd import (
     NativeFunctionWithDifferentiabilityInfo, gen_differentiable_outputs,
@@ -192,12 +194,8 @@ def unpack_args(f: NativeFunction) -> Tuple[List[str], List[Binding]]:
             suffix=suffix,
             ref='&' if ref else '',
         ))
-        unpacked_bindings.append(Binding(
-            name=unpacked_name(binding.name),
-            nctype=binding.nctype,
-            argument=binding.argument,
-            default=binding.default,
-        ))
+        unpacked_bindings.append(
+            dataclasses.replace(binding, name=unpacked_name(binding.name)))
 
     return body, unpacked_bindings
 
