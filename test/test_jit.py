@@ -9790,8 +9790,9 @@ dedent """
             bar()
 
     def test_if_different_type(self):
-        with self.assertRaisesRegex(RuntimeError, "Type mismatch: c0 is set to type int "
-                                    "in the true branch and type float in the false branch:"):
+        with self.assertRaisesRegex(RuntimeError, "c0 is set to type "
+                                    "int in the true branch and type "
+                                    "float in the false branch"):
             @torch.jit.script
             def diff_type_used():
                 if 1 == 2:
@@ -9800,7 +9801,7 @@ dedent """
                     c0 = 1.0
                 return c0
 
-        with self.assertRaisesRegex(RuntimeError, "Variable 'c0' previously has type float"):
+        with self.assertRaisesRegex(RuntimeError, "Variable 'c0' previously had type float"):
             @torch.jit.script
             def diff_existing_type(x):
                 c0 = 1.0
