@@ -6,6 +6,8 @@
 #include <ATen/native/xnnpack/OpContext.h>
 #include <ATen/Tensor.h>
 #include <torch/custom_class.h>
+#include <torch/csrc/jit/runtime/custom_operator.h>
+#include <torch/csrc/jit/runtime/operator.h>
 
 namespace at {
 namespace native {
@@ -80,6 +82,23 @@ TORCH_LIBRARY(xnnpack, m) {
 
 }
 
+torch::jit::RegisterOperators reg(
+    {torch::jit::OperatorGenerator(
+         TORCH_SELECTIVE_SCHEMA("prepacked::unpack_prepacked_sizes_conv2d(Any W_prepack) -> ((int[], int[]?, int[], int[], int[], int))"),
+          [](Stack* stack) {
+            auto inp = torch::jit::pop(stack);
+            torch::jit::push(stack, internal::convolution2d::unpack_prepacked_sizes_conv2d(inp));
+          },
+         c10::AliasAnalysisKind::FROM_SCHEMA),
+     torch::jit::OperatorGenerator(
+         TORCH_SELECTIVE_SCHEMA("prepacked::unpack_prepacked_sizes_linear(Any W_prepack) -> ((int[], int[]?))"),
+          [](Stack* stack) {
+            auto inp = torch::jit::pop(stack);
+            torch::jit::push(stack, internal::linear::unpack_prepacked_sizes_linear(inp));
+          },
+         c10::AliasAnalysisKind::FROM_SCHEMA)});
+
+// Registration using the TORCH_LIBRARY def gives dispatching errors when there is no tensor input
 TORCH_LIBRARY(prepacked, m) {
   m.def(TORCH_SELECTIVE_SCHEMA("prepacked::linear_clamp_prepack(Tensor W, Tensor? B=None, Scalar? output_min=None, Scalar? output_max=None) -> __torch__.torch.classes.xnnpack.LinearOpContext"));
   m.def(TORCH_SELECTIVE_SCHEMA("prepacked::linear_clamp_run(Tensor X, __torch__.torch.classes.xnnpack.LinearOpContext W_prepack) -> Tensor Y"));
